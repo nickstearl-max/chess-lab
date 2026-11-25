@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Chess Lab</title>
+  <meta name="description" content="Reads a chessboard from a screenshot or photo and shows the engine's best move." />
+  <meta name="theme-color" content="#070b10" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Chess Lab" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><img src="icons/icon.svg" alt="" width="26" height="26" /><span>Chess Lab</span></div>
+    <div id="engineChip" class="chip"><span class="dot"></span><span id="engineText">Loading Stockfish…</span></div>
+  </header>
+
+  <main>
+    <section class="board-card">
+      <div class="view-toggle" role="tablist" aria-label="Board view">
+        <button id="viewBoard" class="seg on" role="tab" aria-selected="true">Board</button>
+        <button id="viewShot" class="seg" role="tab" aria-selected="false">What it saw</button>
+      </div>
+      <div class="board-wrap">
+        <svg id="board" viewBox="0 0 400 400" aria-label="Chess board"></svg>
+        <canvas id="shot" width="512" height="512" hidden></canvas>
+        <div id="empty" class="empty">
+          <p class="empty-title">Show it a chessboard</p>
+          <p class="empty-text">Pick a screenshot or photo of a board. It finds the board, reads the pieces and asks Stockfish for the best move. Everything runs on your phone.</p>
+        </div>
+        <div id="busy" class="busy" hidden><span class="spinner"></span><span id="busyText">Reading board…</span></div>
+      </div>
+      <div class="evalbar" aria-hidden="true"><div id="evalWhite"></div></div>
+    </section>
+
+    <section id="resultCard" class="result" hidden>
+      <div class="result-top">
+        <div id="san" class="san"></div>
+        <div id="evalChip" class="eval-chip"></div>
+      </div>
+      <div id="moveDesc" class="move-desc"></div>
+      <div id="line" class="line"></div>
+      <div id="meta" class="meta"></div>
+    </section>
+
+    <section id="banner" class="banner" hidden>
+      <div id="bannerTitle" class="banner-title"></div>
+      <ul id="bannerList"></ul>
+      <button id="bannerAdjust" class="btn small">Drag the corners</button>
+    </section>
+
+    <div class="actions">
+      <label class="btn primary" for="fileInput">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3v13H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        Screenshot or photo
+      </label>
+      <input id="fileInput" type="file" accept="image/*" hidden />
+      <button id="pasteBtn" class="btn">Paste</button>
+    </div>
+
+    <details class="panel" id="optionsPanel">
+      <summary>Options</summary>
+      <div class="field">
+        <span class="label">Board</span>
+        <div class="segmented" data-setting="orientation">
+          <button data-value="auto">Auto</button><button data-value="white">White at bottom</button><button data-value="black">Black at bottom</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label">Turn</span>
+        <div class="segmented" data-setting="turn">
+          <button data-value="auto">Auto</button><button data-value="white">White</button><button data-value="black">Black</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="depth">Depth <output id="depthOut"></output></label>
+        <input id="depth" type="range" min="8" max="24" step="1" />
+      </div>
+      <div class="field">
+        <label class="label" for="skill">Strength <output id="skillOut"></output></label>
+        <input id="skill" type="range" min="0" max="20" step="1" />
+      </div>
+      <div class="field">
+        <label class="label" for="pieceSet">Piece set</label>
+        <select id="pieceSet"></select>
+        <button id="deleteSet" class="btn small ghost" hidden>Delete this set</button>
+      </div>
+      <div class="field">
+        <span class="label">Calibrate from starting position</span>
+        <p class="hint">Load a screenshot of a board in the starting position with your site's pieces, name the set, then tap Calibrate.</p>
+        <div class="row">
+          <input id="calName" type="text" maxlength="40" placeholder="Set name, e.g. chess.com" autocomplete="off" />
+          <button id="calibrateBtn" class="btn">Calibrate</button>
+        </div>
+      </div>
+      <div class="field">
+        <button id="adjustBtn" class="btn ghost">Drag the board corners</button>
+      </div>
+    </details>
+
+    <details class="panel" id="fenPanel">
+      <summary>FEN</summary>
+      <textarea id="fen" rows="2" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      <div class="row">
+        <button id="analyseFen" class="btn">Analyse this FEN</button>
+        <button id="copyFen" class="btn ghost">Copy FEN</button>
+      </div>
+    </details>
+
+    <p class="note">Analysis only: use it on your own games, puzzles and bots, not on live games against people.</p>
+  </main>
+
+  <div id="adjust" class="adjust" hidden>
+    <div class="adjust-head">
+      <span>Drag the four corners onto the board's outer edge</span>
+    </div>
+    <div class="adjust-stage"><canvas id="adjustCanvas"></canvas></div>
+    <div class="row adjust-actions">
+      <button id="adjustCancel" class="btn ghost">Cancel</button>
+      <button id="adjustUse" class="btn primary">Use these corners</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

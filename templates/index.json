@@ -1,0 +1,8 @@
+[
+ {
+  "id": "default",
+  "label": "Default (lichess style)",
+  "file": "templates/default.bin",
+  "symbols": "PPPPPNNNNNBBBBBRRRRRQQQQQKKKKKpppppnnnnnbbbbbrrrrrqqqqqkkkkk"
+ }
+]

@@ -1,0 +1,16 @@
+{
+  "name": "Chess Lab",
+  "short_name": "Chess Lab",
+  "description": "Reads a chessboard from a screenshot or photo and shows the engine's best move.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070b10",
+  "theme_color": "#070b10",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
